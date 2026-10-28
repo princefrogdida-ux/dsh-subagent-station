@@ -1,0 +1,773 @@
+# 红方证据：逐条 P1 修复在「退回 v0.2 形态」后的测试结果
+#
+# 由 scripts/make-red-proof.mjs 生成。生成方式：每条修复单独退回到临时副本，
+# 单独跑一遍同一份 tests/unit/v03.test.js。这样每条红都能归因到具体一处修复。
+# 少数条目（标了「接上条」）必须与前一条同时退回，因为两处修复互为掩护——
+# 只退回其中一处时另一处会救回来，那样得到的「绿」不能证明任何事。
+#
+# 生成时间：2026-10-24T14:28:08.978Z
+# Node：v24.14.0
+
+==============================================================================
+# G1  派出时下发 agentOptions
+# 文件：lib/host/index.js
+# 退回：v0.2 的形态：只把路由写进回执文本，`startActivation` 的 request 里没有 agentOptions。
+# 应当变红：T42、T43
+# 实际变红：T42、T43
+# 退出码：1
+==============================================================================
+✖ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (146.7807ms)
+✖ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (12.5693ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (7.152ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (5.2658ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (5.8776ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (6.8691ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (22.8778ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (16.9896ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (24.9043ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (33.537ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (5.5029ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (28.582ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (15.6223ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (17.3611ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (6.0229ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (9.5508ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (19.8632ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 15
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 463.2562
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:43:1
+✖ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (146.7807ms)
+  AssertionError [ERR_ASSERTION]: agentOptions 必须由决定对象直接构造，等于岗位声明的那条路由
+  + actual - expected
+  
+  + undefined
+  - {
+  -   model: 'pro-model',
+  -   provider: 'vendorA',
+  -   reasoningEffort: 'high'
+  - }
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-FA7Tsk/pkg/tests/unit/v03.test.js:55:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:358:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: [Object],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+test at tests\unit\v03.test.js:71:1
+✖ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (12.5693ms)
+  AssertionError [ERR_ASSERTION]: 第一条请求之前，子会话的 AgentOptions 就必须是岗位值（这是 P1-A 的全部意义）
+  + actual - expected
+  
+  + undefined
+  - {
+  -   model: 'cheap-model',
+  -   provider: 'vendorA'
+  - }
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-FA7Tsk/pkg/tests/unit/v03.test.js:84:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: undefined,
+    expected: [Object],
+    operator: 'deepStrictEqual',
+    diff: 'simple'
+  }
+
+==============================================================================
+# G2-a  启动扫描治理加载前已存在的会话
+# 文件：lib/host/index.js
+# 退回：v0.2 的形态：只治理 `agent/created` 的新会话，插件加载前已存在的会话完全不受管。
+# 应当变红：T45、T46、T57
+# 实际变红：T45、T46、T57
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (137.7253ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (13.603ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (7.3936ms)
+✖ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (5.185ms)
+✖ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (5.045ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (6.6392ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (23.7707ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (16.7962ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (16.6902ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (33.5179ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (7.2793ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (18.3529ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (15.6265ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (17.1059ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (5.0249ms)
+✖ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (10.6342ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (20.2079ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 14
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 443.9522
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:128:1
+✖ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (5.185ms)
+  AssertionError [ERR_ASSERTION]: 加载前已存在的受管根必须已被 guard 覆盖
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-hKcbps/pkg/tests/unit/v03.test.js:137:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\unit\v03.test.js:144:1
+✖ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (5.045ms)
+  AssertionError [ERR_ASSERTION]: 恢复后的子会话下一轮就必须被压回
+  + actual - expected
+  
+  + 'sneaky'
+  - 'vendorA'
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-hKcbps/pkg/tests/unit/v03.test.js:161:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'sneaky',
+    expected: 'vendorA',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\unit\v03.test.js:514:1
+✖ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (10.6342ms)
+  AssertionError [ERR_ASSERTION]: 前提：扫描已挂上 guard
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-hKcbps/pkg/tests/unit/v03.test.js:519:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+==============================================================================
+# G2-b  沿谱系向上解析真正的受管根
+# 文件：lib/host/entry-governor.js
+# 退回：v0.2 的形态：直接拿 `header.parentSession` 当根（只走一层），maxDepth 2 的孙级被判成未受管。
+# 应当变红：T47
+# 实际变红：T47
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (135.4023ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (5.7356ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (6.0431ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (5.2194ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (6.2042ms)
+✖ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (7.5186ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (22.1558ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (16.1058ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (24.9395ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (25.6715ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (7.6871ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (16.8182ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (16.4039ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (18.168ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (6.788ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (3.7912ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (25.1407ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 437.2964
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:169:1
+✖ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (7.5186ms)
+  AssertionError [ERR_ASSERTION]: 孙级必须通过谱系向上走到受管根，而不是只看直接父
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-NilSMX/pkg/tests/unit/v03.test.js:180:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+==============================================================================
+# G3 + G3-guard  guard 内现算 isChild + 身份变化时重挂
+# 文件：lib/host/entry-governor.js
+# 退回：v0.2 的形态：`isChild` 冻结在闭包里，且同 id 直接复用旧 disposer（两处都不做）。
+# 文件：lib/host/entry-governor.js
+# 退回：与 G3 一起生效：把现算也退回闭包冻结值。
+# 应当变红：T48
+# 实际变红：T48
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (147.1154ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (6.821ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (7.2416ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (8.0042ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (7.9833ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (8.744ms)
+✖ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (16.6226ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (7.0716ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (24.9308ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (33.4009ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (9.1635ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (16.4514ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (15.8879ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (17.8257ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (7.0102ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (4.927ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (23.0762ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 456.3126
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:191:1
+✖ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (16.6226ms)
+  AssertionError [ERR_ASSERTION]: 身份改变后即使没有重新 announce，guard 也必须在每次调用时现算 isChild
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-90ltpe/pkg/tests/unit/v03.test.js:207:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+==============================================================================
+# G4-a  首次压回后把回执升到 observed
+# 文件：lib/host/request-lock.js
+# 退回：v0.2 的形态：不写 observed，回执永远停在 started。
+# 应当变红：T49
+# 实际变红：T49
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (147.1126ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (5.2023ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (3.4587ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (6.1233ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (4.1069ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (7.763ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (28.0345ms)
+✖ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (18.9859ms)
+✖ T50 子会话正常结束：回执 settled，note 含 stopReason (13.6764ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (34.1804ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (5.9177ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (27.3483ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (15.7411ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (17.5407ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (5.0433ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (10.7497ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (20.1434ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 15
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 460.4015
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:228:1
+✖ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (18.9859ms)
+  AssertionError [ERR_ASSERTION]: 首轮被压回后必须升到 observed
+  + actual - expected
+  
+  + 'started'
+  - 'observed'
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-TeGGot/pkg/tests/unit/v03.test.js:247:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'started',
+    expected: 'observed',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\unit\v03.test.js:258:1
+✖ T50 子会话正常结束：回执 settled，note 含 stopReason (13.6764ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  + actual - expected
+  
+  + 'started'
+  - 'observed'
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-TeGGot/pkg/tests/unit/v03.test.js:273:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'started',
+    expected: 'observed',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+==============================================================================
+# G4-b  `subagent/end` 收尾回执终态
+# 文件：lib/host/ledger.js
+# 退回：v0.2 的形态：`closeReceipt` 什么都不做，回执永远没有终态。
+# 应当变红：T50、T51
+# 实际变红：T50、T51
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (135.9041ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (6.685ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (7.229ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (3.8381ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (11.951ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (7.4737ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (24.9475ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (7.9064ms)
+✖ T50 子会话正常结束：回执 settled，note 含 stopReason (17.104ms)
+✖ T51 子会话被中断：回执 interrupted，终态不再被改写 (24.3845ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (8.9791ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (7.9351ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (16.3149ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (17.3583ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (7.2709ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (5.0276ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (23.3849ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 15
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 420.6528
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:258:1
+✖ T50 子会话正常结束：回执 settled，note 含 stopReason (17.104ms)
+  AssertionError [ERR_ASSERTION]: 正常结束必须落到终态
+  + actual - expected
+  
+  + 'observed'
+  - 'settled'
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-vnLDkh/pkg/tests/unit/v03.test.js:280:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'observed',
+    expected: 'settled',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests\unit\v03.test.js:287:1
+✖ T51 子会话被中断：回执 interrupted，终态不再被改写 (24.3845ms)
+  AssertionError [ERR_ASSERTION]: aborted 必须映射到 interrupted
+  + actual - expected
+  
+  + 'started'
+  - 'interrupted'
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-vnLDkh/pkg/tests/unit/v03.test.js:301:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 'started',
+    expected: 'interrupted',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+==============================================================================
+# G5-a  空快照自愈
+# 文件：lib/host/index.js
+# 退回：v0.2 的形态：`stationRoutes: []` 被当成「已授权为空」，此后永不更新。
+# 应当变红：T52
+# 实际变红：T52
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (147.6952ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (5.925ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (7.0379ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (5.2755ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (5.4658ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (7.0053ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (23.2669ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (16.4742ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (24.9407ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (34.3834ms)
+✖ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (7.0677ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (17.1019ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (16.7027ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (16.5037ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (5.2252ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (10.8279ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (19.5723ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 449.0497
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:326:1
+✖ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (7.0677ms)
+  StationError: 岗位「reviewer」的默认路由不在当前有效授权集合内（岗位授权与全局/会话策略的交集为空）。请让用户检查全局允许路由，或为该岗位选择一个交集内的默认路由。
+      at resolveRoute (file:///<TEMP>/station-red-yD6QFR/pkg/lib/shared/policy.js:200:13)
+      at decideDispatch (file:///<TEMP>/station-red-yD6QFR/pkg/lib/host/index.js:338:42)
+      at dispatch (file:///<TEMP>/station-red-yD6QFR/pkg/lib/host/index.js:1026:22) {
+    code: 'STATION_EMPTY_EFFECTIVE_SET'
+  }
+
+==============================================================================
+# G5-b  `snapshotEpoch` 显式重建
+# 文件：lib/host/index.js
+# 退回：v0.2 的形态：没有重建入口，放宽永远不生效。
+# 应当变红：T53
+# 实际变红：T53
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (133.614ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (4.8528ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (4.9549ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (5.2959ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (5.7429ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (7.1865ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (22.7728ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (16.6011ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (24.7953ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (25.2157ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (6.4323ms)
+✖ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (18.564ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (16.1515ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (9.9979ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (6.4977ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (3.6189ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (24.4619ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 423.3088
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:367:1
+✖ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (18.564ms)
+  StationError: 岗位「reviewer」的默认路由不在当前有效授权集合内（岗位授权与全局/会话策略的交集为空）。请让用户检查全局允许路由，或为该岗位选择一个交集内的默认路由。
+      at resolveRoute (file:///<TEMP>/station-red-bX0fTB/pkg/lib/shared/policy.js:200:13)
+      at decideDispatch (file:///<TEMP>/station-red-bX0fTB/pkg/lib/host/index.js:338:42)
+      at dispatch (file:///<TEMP>/station-red-bX0fTB/pkg/lib/host/index.js:1026:22) {
+    code: 'STATION_EMPTY_EFFECTIVE_SET'
+  }
+
+==============================================================================
+# G6-a  目录外「像派生入口」的默认拦截
+# 文件：lib/host/coverage.js
+# 退回：v0.2 的形态：目录外入口一律 `deny: false`，改名的派生入口既不拦也不报。
+# 应当变红：T54
+# 实际变红：T54
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (146.7277ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (6.8456ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (7.1493ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (5.8472ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (7.9643ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (7.7911ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (25.042ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (7.8589ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (25.039ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (33.5463ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (8.7064ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (7.5151ms)
+✖ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (16.8836ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (8.4045ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (7.8871ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (5.0999ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (22.6783ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 439.544
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:434:1
+✖ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (16.8836ms)
+  AssertionError [ERR_ASSERTION]: 目录外但名字像派生入口的工具，在子会话里必须被拦（否则「严格受管」是假话）
+  
+  false !== true
+  
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-qdfuEM/pkg/tests/unit/v03.test.js:442:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+==============================================================================
+# G6-b  覆盖诊断的第四态 `unrecognized`
+# 文件：lib/host/coverage.js
+# 退回：v0.2 的形态：只把正则命中的报为未知，其余目录外工具假装不存在。
+# 应当变红：T55
+# 实际变红：T55
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (136.1871ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (7.5299ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (6.4476ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (10.4885ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (7.8992ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (7.9082ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (25.4022ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (7.5183ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (25.5175ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (24.8169ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (9.0799ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (8.1423ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (15.8109ms)
+✖ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (17.2254ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (7.8092ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (4.9865ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (16.6918ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 424.2021
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:452:1
+✖ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (17.2254ms)
+  AssertionError [ERR_ASSERTION]: unrecognized 必须包含 read，实际：[]
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-Q3O9C1/pkg/tests/unit/v03.test.js:467:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+==============================================================================
+# G6-c  按作用域读取可见工具名
+# 文件：lib/host/index.js
+# 退回：v0.2 的形态：`ctx.tools.schemas()` 不带 scope，scoped 注册在诊断里不可见。
+# 应当变红：T56
+# 实际变红：T56
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (142.898ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (6.7933ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (7.0774ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (10.2484ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (7.611ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (8.3419ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (24.3329ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (8.3294ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (24.1731ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (33.9397ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (9.1239ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (16.5752ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (15.5517ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (17.7005ms)
+✖ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (3.5481ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (6.0567ms)
+✔ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (18.7189ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 447.8215
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:485:1
+✖ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (3.5481ms)
+  AssertionError [ERR_ASSERTION]: 该 agent 的作用域视图必须看得见它，实际：{"state":"complete","known":[{"name":"dispatch_roles","category":"station","owner":"dsh-subagent-station","policy":"allow"},{"name":"dispatch_agent","category":"station","owner":"dsh-subagent-station","policy":"deny-in-child"},{"name":"station_status","category":"station","owner":"dsh-subagent-station","policy":"allow"}],"unknown":[],"unrecognized":[],"catalogVersion":"2026.10.21-0.2.1-rc.2","visibleCount":3}
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-R8qAp1/pkg/tests/unit/v03.test.js:501:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+==============================================================================
+# G6-d  `station_status` 诊断工具
+# 文件：lib/host/index.js
+# 退回：v0.2 的形态：没有这个工具，用户没有任何能问的地方。
+# 应当变红：T58
+# 实际变红：T58
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (140.6465ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (6.5643ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (8.0488ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (5.278ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (5.6066ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (7.1196ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (22.7086ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (16.5137ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (16.4728ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (33.8771ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (5.8902ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (18.7795ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (16.6824ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (17.4182ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (6.217ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (8.9605ms)
+✖ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (8.0499ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 427.6088
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:539:1
+✖ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (8.0499ms)
+  Error: station_status 未注册
+      at callStatus (file:///<TEMP>/station-red-rqgxRa/pkg/tests/host-fixture.js:481:39)
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-rqgxRa/pkg/tests/unit/v03.test.js:543:24)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7)
+
+==============================================================================
+# G6-e  未受管用户的岗位 dry-run 与「假如受管」标注
+# 文件：lib/host/index.js
+# 退回：退回成「直接用调用者会话做 dry-run」：未受管用户会拿到一句「当前会话没有被启用为受管会话」，于是最需要诊断的人反而看不到岗位诊断。
+# 应当变红：T58
+# 实际变红：T58
+# 退出码：1
+==============================================================================
+✔ T42 派出的 startActivation 里 request.agentOptions 等于回执声明的路由 (137.824ms)
+✔ T43 首轮请求之前，子会话创建参数已是岗位值（不经请求锁） (8.0056ms)
+✔ T44 后端不声明 agentOptions 时仍然拒绝（预检没有退化成空操作） (6.9322ms)
+✔ T45 插件加载前已存在的受管根：加载后立即受 guard 约束 (8.5206ms)
+✔ T46 插件加载前已存在的受管子会话：下一轮请求即被压回台账值 (8.054ms)
+✔ T47 maxDepth: 2 的孙级：判定受管且根 id 正确 (7.9306ms)
+✔ T48 同一 agent 身份变更后重挂：isChild 刷新，孙级派出被拒 (24.9312ms)
+✔ T49 首次成功压回后回执从 started 变为 observed，且只变一次 (7.5602ms)
+✔ T50 子会话正常结束：回执 settled，note 含 stopReason (25.2229ms)
+✔ T51 子会话被中断：回执 interrupted，终态不再被改写 (33.3912ms)
+✔ T52 空快照后补齐路由：下一次派出成功（不改 epoch） (9.5507ms)
+✔ T53 snapshotEpoch 加 1：按新集合重算，snapshotVersion + 1，在跑子会话不受影响 (15.6533ms)
+✔ T54 受管子会话遇目录外但名字像派生的入口（subagent_v2）→ 拒绝 (25.1681ms)
+✔ T55 目录外的普通工具（read/bash）不被误拦，且进 unrecognized 清单 (16.5451ms)
+✔ T56 scoped 注册的入口出现在该 agent 的覆盖诊断里，且不影响全局视图 (8.4153ms)
+✔ T57 卸载后启动扫描挂上的治理同样解除，台账保留 (5.5482ms)
+✖ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (22.1543ms)
+ℹ tests 17
+ℹ suites 0
+ℹ pass 16
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 449.9867
+
+✖ failing tests:
+
+test at tests\unit\v03.test.js:539:1
+✖ T58 未受管会话调 station_status：给出本会话 id、原因与两种纳入方式 (22.1543ms)
+  AssertionError [ERR_ASSERTION]: dry-run 要给出可判断的结论
+      at TestContext.<anonymous> (file:///<TEMP>/station-red-rkVsRR/pkg/tests/unit/v03.test.js:556:12)
+      at async Test.run (node:internal/test_runner/test:1125:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:787:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: '派出所状态\n- 安装：已加载（entry dsh-subagent-station）\n- 本会话：free-1（**未受管**）\n  · 原因：本会话与其谱系根都不在 `managedSessionIds` 里，且 `manageAllNewRoots` 未开启；谱系根 free-1\n  · 纳入方式一：把上面的 id 加进 `managedSessionIds` 配置\n  · 纳入方式二：把 `manageAllNewRoots` 设为 `true`（新的根会话自动受管）\n- 受管根：0 个\n- 存活会话：1 个，其中受管 0 个；未受管 1 个：free-1\n- 谱系解析：full\n- 策略：2 条路由 / 2 个岗位（0 个禁用、0 个冲突）\n...',
+    expected: /决定：可派出/,
+    operator: 'match',
+    diff: 'simple'
+  }
+

@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Subagent Dispatch Station (dsh-subagent-station)",
+    "description": "Role-bound model routing for subagents: the role's route is sent to the child at dispatch time, and every later model request is pinned back to the approved route. Both the entry guard and the request lock are mounted once at plugin load and decide per call, so \"just installed, never dispatched yet\" is not a free window either. Call station_status to see what is actually enforced right now — it will also say plainly when it cannot tell."
+  }
+}

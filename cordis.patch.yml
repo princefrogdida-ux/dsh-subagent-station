@@ -1,0 +1,11 @@
+# 子智能体派出所（dsh-subagent-station）bundle 补丁层。
+#
+# 一行宿主插件：加载包的 main 入口（一个普通 Cordis 插件），它注册
+# `dispatch_roles` / `dispatch_agent` 两个工具、岗位与全局策略的 Config，
+# 以及一个只读诊断服务（`subagentStation.snapshot()`）。
+#
+# 本插件**没有**客户端半边：v0.1 的卡片读一个永远为 undefined 的 props，
+# 已按 v0.2 方案 8.2 删除。诊断由工具回执与 `subagentStation` 服务提供。
+- insert:
+    - id: dsh-subagent-station
+      name: dsh-subagent-station

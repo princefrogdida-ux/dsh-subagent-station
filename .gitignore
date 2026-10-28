@@ -1,0 +1,32 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build / tooling output
+dist/
+*.tsbuildinfo
+
+# Logs and temporary files
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+.vscode/
+.idea/
+
+# Local scratch / non-distributable proof runs
+/tmp/
+*.local
+
+# Never commit local credentials or profile data
+.env
+.env.*
+*.pem
+*.key
+credentials*

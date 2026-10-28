@@ -1,0 +1,97 @@
+{
+  "catalogVersion": "2",
+  "dshVersion": "0.2.1-rc.2",
+  "note": "已知的派生入口目录（schema v2）。用于入口判定与覆盖诊断。字段 semantics 见 docs/contract-evidence.md §C20。新增条目必须同时更新 lib/host/coverage.js 的判定分支——v0.4 起每个分支都能对应到本文件的一行配置，没有合流。",
+  "entries": [
+    {
+      "name": "subagent",
+      "category": "official-spawn",
+      "owner": "@deepseek-ai/dsh-tool-subagent",
+      "createsAgent": true,
+      "rootVerdict": "deny",
+      "childVerdict": "deny",
+      "evidence": "全局唯一；可传 provider/model/reasoning_effort，创建新 agent ⇒ 必须改走 dispatch_agent"
+    },
+    {
+      "name": "subagent_fork",
+      "category": "official-fork",
+      "owner": "@deepseek-ai/dsh-tool-subagent",
+      "createsAgent": true,
+      "rootVerdict": "deny",
+      "childVerdict": "deny",
+      "evidence": "同上；不暴露模型选择，但创建新 agent ⇒ 仍然绕过岗位策略"
+    },
+    {
+      "name": "workflow",
+      "category": "batch-delegation",
+      "owner": "@deepseek-ai/dsh-tool-workflow",
+      "createsAgent": true,
+      "rootVerdict": "deny",
+      "childVerdict": "deny",
+      "evidence": "脚本内 agent() 可批量派生（v0.1 遗漏的绕过通道）"
+    },
+    {
+      "name": "spawn_teammate",
+      "category": "team",
+      "owner": "@deepseek-ai/dsh-experimental-tool-agent-team",
+      "createsAgent": true,
+      "rootVerdict": "deny",
+      "childVerdict": "deny",
+      "evidence": "本 profile 未挂载（listTools 中不存在）；存在才拦"
+    },
+    {
+      "name": "dispatch_agent",
+      "category": "station",
+      "owner": "dsh-subagent-station",
+      "createsAgent": true,
+      "rootVerdict": "allow",
+      "childVerdict": "deny",
+      "evidence": "本插件受控路径；受管根允许（这正是唯一该用的入口），子会话禁止（它就是孙级）。childVerdict 的 deny 受 forbidNestedDispatch 开关约束"
+    },
+    {
+      "name": "send_message",
+      "category": "continuation",
+      "owner": "@deepseek-ai/dsh-tool-subagent-control",
+      "createsAgent": false,
+      "rootVerdict": "allow-if-target-known",
+      "childVerdict": "allow-if-parent-or-known",
+      "evidence": "只向已存在的 agent 投递消息，不创建 agent、不改变路由（dsh-tool-subagent-control.js:21-59）。目标必须能在台账或谱系里解释清楚"
+    },
+    {
+      "name": "interrupt_agent",
+      "category": "control",
+      "owner": "@deepseek-ai/dsh-tool-subagent-control",
+      "createsAgent": false,
+      "rootVerdict": "allow",
+      "childVerdict": "allow",
+      "evidence": "只中断，不派生、不改路由；防绕过不能牺牲停止能力"
+    },
+    {
+      "name": "list_subagent_models",
+      "category": "discovery",
+      "owner": "@deepseek-ai/dsh-tool-subagent",
+      "createsAgent": false,
+      "rootVerdict": "allow",
+      "childVerdict": "allow",
+      "evidence": "只读路由发现，不派生"
+    },
+    {
+      "name": "dispatch_roles",
+      "category": "station",
+      "owner": "dsh-subagent-station",
+      "createsAgent": false,
+      "rootVerdict": "allow",
+      "childVerdict": "allow",
+      "evidence": "本插件；只读岗位表；任何会话层都允许"
+    },
+    {
+      "name": "station_status",
+      "category": "station",
+      "owner": "dsh-subagent-station",
+      "createsAgent": false,
+      "rootVerdict": "allow",
+      "childVerdict": "allow",
+      "evidence": "本插件；只读诊断。任何会话层级都允许——被拒绝诊断就等于没有诊断"
+    }
+  ]
+}
